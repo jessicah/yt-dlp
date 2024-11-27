@@ -317,6 +317,11 @@ def create_parser():
         parser.rargs[:0] = shlex.split(
             opts if value is None else opts.format(*map(shlex.quote, value)))
 
+    def _cookies_from_browser_callback(option, opt_str, value, parser):
+        mobj = re.fullmatch('([^+:]+)(?:\+([^:]+))?(?::([^:]+))?(?:::([^:]+))?$', value)
+        if mobj is not None:
+            setattr(parser.values, option.dest, (mobj[1], mobj[2], mobj[3], mobj[4]))
+
     general = optparse.OptionGroup(parser, 'General Options')
     general.add_option(
         '-h', '--help', dest='print_help', action='store_true',
@@ -1485,6 +1490,7 @@ def create_parser():
         help='Do not read/dump cookies from/to file (default)')
     filesystem.add_option(
         '--cookies-from-browser',
+        action='callback', callback=_cookies_from_browser_callback, type='str',
         dest='cookiesfrombrowser', metavar='BROWSER[+KEYRING][:PROFILE][::CONTAINER]',
         help=(
             'The name of the browser to load cookies from. '
